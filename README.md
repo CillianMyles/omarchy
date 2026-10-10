@@ -24,6 +24,11 @@ the setup script.
 Every machine is set up as a pseudo-headless server: wayvnc (Tailscale
 only), lid stays awake on AC or with an external display, no screensaver.
 
+VNC login is user `cillian` plus that box's own 8-character VNC password,
+generated on first apply in `~/.config/wayvnc/password` (never committed).
+Save it in Bitwarden. macOS Screen Sharing works: `vnc://<box-name>`.
+To change it, edit that file, then `chezmoi apply && systemctl --user restart wayvnc`.
+
 Detected automatically: the software-cursor fix (only with the nouveau
 driver) and the Apple keyboard fn-key fix (only on Apple hardware).
 

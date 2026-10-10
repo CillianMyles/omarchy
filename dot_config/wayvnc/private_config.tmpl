@@ -1,0 +1,17 @@
+# Listen on all interfaces; the firewall only lets VNC in over Tailscale.
+address=0.0.0.0
+port=5900
+
+# Log in as cillian with this box's VNC password, which lives only in
+# ~/.config/wayvnc/password (generated on first apply, never in the repo).
+enable_auth=true
+username={{ .chezmoi.username }}
+password={{ output "sh" "-c" "f=\"$HOME/.config/wayvnc/password\"; if [ ! -s \"$f\" ]; then mkdir -p \"${f%/*}\" && (umask 077; tr -dc 'A-Za-z0-9' </dev/urandom | head -c 8 >\"$f\"); fi; cat \"$f\"" | trim }}
+rsa_private_key_file={{ .chezmoi.homeDir }}/.config/wayvnc/rsa_key.pem
+
+# macOS Screen Sharing speaks the old RFB 3.3 protocol, which only supports
+# the classic 8-character DES password; newer clients (TigerVNC, RealVNC) use
+# RSA-AES. Acceptable because VNC is only reachable over Tailscale, which
+# encrypts the connection end to end.
+allow_broken_crypto=true
+relax_encryption=true
