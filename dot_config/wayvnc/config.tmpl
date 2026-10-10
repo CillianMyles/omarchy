@@ -5,3 +5,7 @@ port=5900
 enable_auth=true
 enable_pam=true
 rsa_private_key_file={{ .chezmoi.homeDir }}/.config/wayvnc/rsa_key.pem
+# Allow macOS Screen Sharing (Apple Diffie-Hellman login). The session itself
+# is then unencrypted by VNC, but VNC is only reachable over Tailscale, which
+# encrypts it end to end.
+relax_encryption=true
