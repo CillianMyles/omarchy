@@ -18,13 +18,8 @@ My Omarchy customizations, managed with [chezmoi](https://chezmoi.io).
 System files that live outside `$HOME` are kept in `system/` and installed by
 the setup script.
 
-chezmoi asks one question on the first `init`, remembered per machine in
-`~/.config/chezmoi/chezmoi.toml`:
-
-- **Headless server**: wayvnc (Tailscale only), lid stays awake on AC or
-  with an external display, no screensaver. Answer yes for frankenbook.
-
-Change the answer later with `chezmoi init --prompt`, then `chezmoi apply`.
+Every machine is set up as a pseudo-headless server: wayvnc (Tailscale
+only), lid stays awake on AC or with an external display, no screensaver.
 
 Detected automatically: the software-cursor fix (only with the nouveau
 driver) and the Apple keyboard fn-key fix (only on Apple hardware).
@@ -32,7 +27,7 @@ driver) and the Apple keyboard fn-key fix (only on Apple hardware).
 ## Day to day
 
 - Changed a tracked file: `chezmoi re-add && chezmoi cd && git commit -am "..." && git push`
-  - `re-add` skips templates (`*.tmpl`: `looknfeel.lua`, `shell.json`).
+  - `re-add` skips templates (`*.tmpl`: `looknfeel.lua`).
     For those, run `chezmoi merge <path>` or edit with `chezmoi edit <path>`.
 - Track a new file: `chezmoi add <path>`
 - Made a system change (package, service, firewall): add it to

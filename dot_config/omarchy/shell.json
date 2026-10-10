@@ -1,7 +1,7 @@
 {
   "version": 1,
   "idle": {
-    "screensaver": {{ if .headless }}86400{{ else }}150{{ end }},
+    "screensaver": 86400,
     "lock": 300
   },
   "bar": {

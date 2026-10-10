@@ -4,8 +4,7 @@
 # changes. Add a line here whenever you make a system change by hand.
 set -euo pipefail
 
-# Re-run when the machine's answers or the system config files change:
-# headless={{ .headless }}
+# Re-run when the system config files change:
 # {{ include "system/30-headless-lid.conf" | sha256sum }}
 # {{ include "system/wake-on-lan.conf" | sha256sum }}
 # {{ include "system/hid_apple.conf" | sha256sum }}
@@ -55,7 +54,6 @@ if [[ $(cat /sys/class/dmi/id/sys_vendor 2>/dev/null) == Apple* ]] &&
   rebuild_initramfs
 fi
 
-{{ if .headless -}}
 # Headless server: stay awake with the lid closed on AC or with an external
 # display (IP KVM) attached; still suspend on battery.
 sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/30-headless-lid.conf" /etc/systemd/logind.conf.d/
@@ -69,10 +67,3 @@ if [[ ! -f $HOME/.config/wayvnc/rsa_key.pem ]]; then
   rm -f "$HOME/.config/wayvnc/rsa_key.pem.pub"
 fi
 sudo ufw allow in on tailscale0 to any port 5900 proto tcp comment 'VNC over Tailscale'
-{{- else -}}
-# Not headless: undo the headless lid setting if this machine was one before.
-if [[ -f /etc/systemd/logind.conf.d/30-headless-lid.conf ]]; then
-  sudo rm /etc/systemd/logind.conf.d/30-headless-lid.conf
-  sudo systemctl reload systemd-logind
-fi
-{{- end }}
