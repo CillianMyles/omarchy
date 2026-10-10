@@ -1,0 +1,12 @@
+[Unit]
+Description=VNC server for the Hyprland session
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/wayvnc
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
