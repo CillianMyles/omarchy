@@ -8,7 +8,7 @@ My Omarchy customizations, managed with [chezmoi](https://chezmoi.io).
 2. Run:
    ```
    omarchy pkg add chezmoi
-   chezmoi init --apply --force CillianMyles/omarchy
+   chezmoi init --apply --force CillianMyles/omarchy-dotfiles
    ```
    `run_onchange_before_10-setup-system.sh.tmpl` runs first (packages, SSH,
    firewall, Tailscale, keyboard layout, headless lid/Wake-on-LAN), then the
