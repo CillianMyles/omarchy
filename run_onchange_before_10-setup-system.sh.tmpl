@@ -7,6 +7,7 @@ set -euo pipefail
 # Re-run when the system config files change:
 # {{ include "system/30-headless-lid.conf" | sha256sum }}
 # {{ include "system/wake-on-lan.conf" | sha256sum }}
+# {{ include "system/hid_apple.conf" | sha256sum }}
 
 # Extra packages beyond Omarchy's defaults.
 omarchy pkg add bitwarden bitwarden-cli t3code-bin wayvnc ethtool
@@ -52,3 +53,12 @@ if [[ ! -f $HOME/.config/wayvnc/rsa_key.pem ]]; then
   rm -f "$HOME/.config/wayvnc/rsa_key.pem.pub"
 fi
 sudo ufw allow in on tailscale0 to any port 5900 proto tcp comment 'VNC over Tailscale'
+
+# Apple keyboards: media keys on the top row, Fn for F1-F12 (Omarchy forces
+# the opposite; see omacom/omarchy#7110). Only on Macs.
+if [[ $(cat /sys/class/dmi/id/sys_vendor 2>/dev/null) == Apple* ]] &&
+  ! cmp -s "$CHEZMOI_SOURCE_DIR/system/hid_apple.conf" /etc/modprobe.d/hid_apple.conf; then
+  sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/hid_apple.conf" /etc/modprobe.d/
+  echo 1 | sudo tee /sys/module/hid_apple/parameters/fnmode >/dev/null || true
+  sudo limine-mkinitcpio
+fi
