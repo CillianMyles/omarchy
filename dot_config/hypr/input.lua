@@ -56,12 +56,11 @@
 -- hl.gesture({ fingers = 3, direction = "left", action = function() hl.dispatch(hl.dsp.focus({ direction = "l" })) end })
 -- hl.gesture({ fingers = 3, direction = "right", action = function() hl.dispatch(hl.dsp.focus({ direction = "r" })) end })
 
--- Use a US keyboard layout, with macOS-style natural scrolling on trackpads
--- (and mice, if chosen at `chezmoi init`).
+-- Use a US keyboard layout, with macOS-style natural scrolling.
 hl.config({
   input = {
     kb_layout = "us",
-    natural_scroll = {{ .naturalScrollMouse }},
+    natural_scroll = true,
     touchpad = {
       natural_scroll = true,
     },

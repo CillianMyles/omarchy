@@ -1,6 +1,4 @@
 {{- /* Asked once per machine on `chezmoi init`; change later with `chezmoi init --prompt`. */ -}}
 {{- $headless := promptBoolOnce . "headless" "Headless server (VNC + lid stays awake on AC + no screensaver)" false -}}
-{{- $naturalScrollMouse := promptBoolOnce . "naturalScrollMouse" "Reverse mouse wheel like macOS (trackpads always are)" false -}}
 [data]
 headless = {{ $headless }}
-naturalScrollMouse = {{ $naturalScrollMouse }}
