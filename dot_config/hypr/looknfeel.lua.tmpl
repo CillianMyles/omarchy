@@ -58,3 +58,10 @@ hl.config({
   },
 })
 {{- end }}
+{{- if output "sh" "-c" "grep -qw '^apple_gmux' /proc/modules && echo yes || true" | trim | eq "yes" }}
+
+-- Dual-GPU MacBooks expose the built-in panel twice (LVDS-1 on NVIDIA, LVDS-2
+-- on Intel). Mirror the Intel copy onto the NVIDIA one so there's a single
+-- desktop, and VNC shows what's actually on screen.
+hl.monitor({ output = "LVDS-2", mode = "preferred", position = "auto", scale = "auto", mirror = "LVDS-1" })
+{{- end }}
