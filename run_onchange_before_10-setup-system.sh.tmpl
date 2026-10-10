@@ -29,10 +29,18 @@ fi
 sudo systemctl enable --now sshd
 sudo ufw allow 22/tcp comment SSH
 
-# Tailscale (prompts for a browser login on first install).
+# Tailscale. With TS_AUTHKEY set (a reusable key tagged tag:agent, kept in
+# Bitwarden) the box joins unattended and never expires; without it, this
+# prints a browser login link.
 if ! pacman -Q tailscale >/dev/null 2>&1; then
-  omarchy install service tailscale
+  omarchy pkg add tailscale
 fi
+sudo systemctl enable --now tailscaled
+if ! tailscale status >/dev/null 2>&1; then
+  sudo tailscale up --accept-routes ${TS_AUTHKEY:+--auth-key="$TS_AUTHKEY"}
+fi
+sudo tailscale set --operator="$USER"
+systemctl --user enable --now omarchy-tailscale-receive.service || true
 
 # Voxtype dictation.
 if ! pacman -Q voxtype-bin >/dev/null 2>&1; then

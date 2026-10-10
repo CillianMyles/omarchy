@@ -8,8 +8,11 @@ My Omarchy customizations, managed with [chezmoi](https://chezmoi.io).
 2. Run:
    ```
    omarchy pkg add chezmoi
-   chezmoi init --apply --force CillianMyles/omarchy-dotfiles
+   TS_AUTHKEY=tskey-auth-... chezmoi init --apply --force CillianMyles/omarchy-dotfiles
    ```
+   `TS_AUTHKEY` is the reusable `tag:agent` Tailscale auth key from Bitwarden;
+   the box joins the tailnet unattended and its key never expires. Leave it
+   out to log in through the browser instead.
    `run_onchange_before_10-setup-system.sh.tmpl` runs first (packages, SSH,
    firewall, Tailscale, keyboard layout, headless lid/Wake-on-LAN), then the
    config files are written, then `run_onchange_after_20-enable-user-services.sh`
