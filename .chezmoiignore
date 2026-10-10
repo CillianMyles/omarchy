@@ -1,3 +1,7 @@
 README.md
 LICENSE
 system
+{{- if not .headless }}
+.config/wayvnc
+.config/systemd/user/wayvnc.service
+{{- end }}

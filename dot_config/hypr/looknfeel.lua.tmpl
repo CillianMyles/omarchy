@@ -48,6 +48,7 @@
 --     column_width = 0.97,
 --   },
 -- })
+{{- if output "sh" "-c" "grep -qw '^nouveau' /proc/modules && echo yes || true" | trim | eq "yes" }}
 
 -- nouveau does not display the hardware cursor plane on many older NVIDIA GPUs,
 -- leaving the pointer invisible on the physical display. Render it in software.
@@ -56,3 +57,4 @@ hl.config({
     no_hardware_cursors = true,
   },
 })
+{{- end }}

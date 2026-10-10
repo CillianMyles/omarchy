@@ -4,21 +4,26 @@
 # changes. Add a line here whenever you make a system change by hand.
 set -euo pipefail
 
-# Re-run when the system config files change:
+# Re-run when the machine's answers or the system config files change:
+# headless={{ .headless }}
 # {{ include "system/30-headless-lid.conf" | sha256sum }}
 # {{ include "system/wake-on-lan.conf" | sha256sum }}
 # {{ include "system/hid_apple.conf" | sha256sum }}
 
+rebuild_initramfs() {
+  if command -v limine-mkinitcpio >/dev/null; then
+    sudo limine-mkinitcpio
+  fi
+}
+
 # Extra packages beyond Omarchy's defaults.
-omarchy pkg add bitwarden bitwarden-cli t3code-bin wayvnc ethtool
+omarchy pkg add bitwarden bitwarden-cli t3code-bin ethtool
 
 # Keyboard: US layout system-wide (TTY + boot password prompt).
 if [[ $(localectl status) != *"X11 Layout: us"* ]]; then
   sudo localectl set-keymap us
   sudo localectl set-x11-keymap us
-  if command -v limine-mkinitcpio >/dev/null; then
-    sudo limine-mkinitcpio
-  fi
+  rebuild_initramfs
 fi
 
 # SSH server, reachable through the firewall.
@@ -35,24 +40,11 @@ if ! pacman -Q voxtype-bin >/dev/null 2>&1; then
   omarchy-voxtype-install
 fi
 
-# Headless server: stay awake with the lid closed on AC or with an external
-# display (IP KVM) attached; still suspend on battery.
-sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/30-headless-lid.conf" /etc/systemd/logind.conf.d/
-sudo systemctl reload systemd-logind
-
 # Wake-on-LAN (magic packet) on wired connections, now and for new profiles.
 sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/wake-on-lan.conf" /etc/NetworkManager/conf.d/
 sudo nmcli general reload conf
 nmcli -t -f NAME,TYPE con show | awk -F: '$2 == "802-3-ethernet" { print $1 }' |
   while read -r con; do sudo nmcli con modify "$con" 802-3-ethernet.wake-on-lan magic; done
-
-# VNC: key for wayvnc's encrypted login; only reachable over Tailscale.
-if [[ ! -f $HOME/.config/wayvnc/rsa_key.pem ]]; then
-  mkdir -p "$HOME/.config/wayvnc"
-  ssh-keygen -q -m pem -t rsa -b 4096 -N "" -C wayvnc -f "$HOME/.config/wayvnc/rsa_key.pem"
-  rm -f "$HOME/.config/wayvnc/rsa_key.pem.pub"
-fi
-sudo ufw allow in on tailscale0 to any port 5900 proto tcp comment 'VNC over Tailscale'
 
 # Apple keyboards: media keys on the top row, Fn for F1-F12 (Omarchy forces
 # the opposite; see omacom/omarchy#7110). Only on Macs.
@@ -60,5 +52,27 @@ if [[ $(cat /sys/class/dmi/id/sys_vendor 2>/dev/null) == Apple* ]] &&
   ! cmp -s "$CHEZMOI_SOURCE_DIR/system/hid_apple.conf" /etc/modprobe.d/hid_apple.conf; then
   sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/hid_apple.conf" /etc/modprobe.d/
   echo 1 | sudo tee /sys/module/hid_apple/parameters/fnmode >/dev/null || true
-  sudo limine-mkinitcpio
+  rebuild_initramfs
 fi
+
+{{ if .headless -}}
+# Headless server: stay awake with the lid closed on AC or with an external
+# display (IP KVM) attached; still suspend on battery.
+sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/30-headless-lid.conf" /etc/systemd/logind.conf.d/
+sudo systemctl reload systemd-logind
+
+# VNC: wayvnc with an encrypted login, only reachable over Tailscale.
+omarchy pkg add wayvnc
+if [[ ! -f $HOME/.config/wayvnc/rsa_key.pem ]]; then
+  mkdir -p "$HOME/.config/wayvnc"
+  ssh-keygen -q -m pem -t rsa -b 4096 -N "" -C wayvnc -f "$HOME/.config/wayvnc/rsa_key.pem"
+  rm -f "$HOME/.config/wayvnc/rsa_key.pem.pub"
+fi
+sudo ufw allow in on tailscale0 to any port 5900 proto tcp comment 'VNC over Tailscale'
+{{- else -}}
+# Not headless: undo the headless lid setting if this machine was one before.
+if [[ -f /etc/systemd/logind.conf.d/30-headless-lid.conf ]]; then
+  sudo rm /etc/systemd/logind.conf.d/30-headless-lid.conf
+  sudo systemctl reload systemd-logind
+fi
+{{- end }}
