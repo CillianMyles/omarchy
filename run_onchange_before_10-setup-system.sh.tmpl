@@ -8,6 +8,7 @@ set -euo pipefail
 # {{ include "system/30-headless-lid.conf" | sha256sum }}
 # {{ include "system/wake-on-lan.conf" | sha256sum }}
 # {{ include "system/hid_apple.conf" | sha256sum }}
+# {{ include "system/20-key-only.conf" | sha256sum }}
 
 rebuild_initramfs() {
   if command -v limine-mkinitcpio >/dev/null; then
@@ -16,18 +17,27 @@ rebuild_initramfs() {
 }
 
 # Extra packages beyond Omarchy's defaults.
-omarchy pkg add bitwarden bitwarden-cli t3code-bin ethtool
+omarchy pkg add openssh bitwarden bitwarden-cli t3code-bin ethtool
 
-# Keyboard: US layout system-wide (TTY + boot password prompt).
-if [[ $(localectl status) != *"X11 Layout: us"* ]]; then
-  sudo localectl set-keymap us
-  sudo localectl set-x11-keymap us
+# Keyboard layout system-wide: TTY, boot password prompt, and Hyprland, which
+# reads /etc/vconsole.conf. UK unless the machine overrides `keyboard` (see
+# .chezmoidata.toml). Hyprland picks up a change at the next login.
+{{- $console := replace "gb" "uk" .keyboard }}
+if [[ $(localectl status) != *"X11 Layout: {{ .keyboard }}"* ]]; then
+  sudo localectl set-keymap {{ $console }}
+  sudo localectl set-x11-keymap {{ .keyboard }}
   rebuild_initramfs
 fi
 
-# SSH server, reachable through the firewall.
+# SSH server: keys only (clients in private_dot_ssh/authorized_keys), reachable
+# from the home LAN and over Tailscale. The keys are written after this script,
+# so run the first apply at the console, not over a password SSH session.
+sudo install -m644 "$CHEZMOI_SOURCE_DIR/system/20-key-only.conf" /etc/ssh/sshd_config.d/
 sudo systemctl enable --now sshd
-sudo ufw allow 22/tcp comment SSH
+sudo systemctl reload sshd
+sudo ufw delete allow 22/tcp >/dev/null 2>&1 || true
+sudo ufw allow from 192.168.86.0/24 to any port 22 proto tcp comment 'SSH from LAN'
+sudo ufw allow in on tailscale0 to any port 22 proto tcp comment 'SSH over Tailscale'
 
 # Tailscale. With TS_AUTHKEY set (a reusable key tagged tag:agent, kept in
 # Bitwarden) the box joins unattended and never expires; without it, this

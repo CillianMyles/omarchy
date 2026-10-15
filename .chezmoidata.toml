@@ -1,0 +1,8 @@
+# Defaults for every machine. Override one for a single machine in its
+# ~/.config/chezmoi/chezmoi.toml, for example FrankenBook's US keyboard:
+#
+#   [data]
+#   keyboard = "us"
+
+# XKB layout for the console, the disk-password prompt and Hyprland.
+keyboard = "gb"

@@ -56,10 +56,10 @@
 -- hl.gesture({ fingers = 3, direction = "left", action = function() hl.dispatch(hl.dsp.focus({ direction = "l" })) end })
 -- hl.gesture({ fingers = 3, direction = "right", action = function() hl.dispatch(hl.dsp.focus({ direction = "r" })) end })
 
--- Use a US keyboard layout, with macOS-style natural scrolling.
+-- macOS-style natural scrolling. The keyboard layout isn't set here: Omarchy
+-- reads it from /etc/vconsole.conf, which the setup script manages.
 hl.config({
   input = {
-    kb_layout = "us",
     natural_scroll = true,
     touchpad = {
       natural_scroll = true,

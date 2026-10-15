@@ -1,0 +1,5 @@
+# Clients allowed to SSH into every box. Public keys only; managed by chezmoi,
+# so add or remove a client here rather than on the box.
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICz0+0/cJocO/0nEZ+QcDXx8ykDxs6KadsFDmWQJbsz3 silverbook
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII/raFLHFnqH7ZOHeCNhV7wncTuAkOkHTMWG0Xp98j54 iphone-14-pro-max
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFM0HnMRhgFxZC69bFn1K2wLkLmo5olVnU2ryqyOGxRG ipad-air-gen-4
